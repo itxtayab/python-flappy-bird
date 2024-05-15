@@ -16,18 +16,16 @@ RED = (255, 0, 0)
 # Game settings
 GRAVITY = 0.25
 FLAP_STRENGTH = -6
-BIRD_WIDTH, BIRD_HEIGHT = 50, 35
-PIPE_GAP = 2 * BIRD_HEIGHT  # Gap between pipes is 2 times the height of the bird
+PIPE_GAP = 200
 PIPE_WIDTH = 70
 PIPE_VELOCITY = -4
 
 # Load and resize images
 BIRD_IMAGE = pygame.image.load('bird.png')
-BIRD_IMAGE = pygame.transform.scale(BIRD_IMAGE, (BIRD_WIDTH, BIRD_HEIGHT))
+BIRD_IMAGE = pygame.transform.scale(BIRD_IMAGE, (50, 35))
 
 PIPE_IMAGE = pygame.image.load('pipe.png')
 PIPE_IMAGE = pygame.transform.scale(PIPE_IMAGE, (PIPE_WIDTH, 400))
-PIPE_IMAGE_ROTATED = pygame.transform.rotate(PIPE_IMAGE, 180)
 
 BACKGROUND_IMAGE = pygame.image.load('background.png')
 BACKGROUND_IMAGE = pygame.transform.scale(BACKGROUND_IMAGE, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -59,26 +57,21 @@ class Bird:
 class Pipe:
     def __init__(self, x):
         self.x = x
-        self.height_top = 300  # Fixed height for the top pipe for testing
-        self.height_bottom = 150  # Fixed height for the bottom pipe for testing
-        self.top_rect = pygame.Rect(self.x, 0, PIPE_WIDTH, self.height_top)
-        self.bottom_rect = pygame.Rect(self.x, SCREEN_HEIGHT - self.height_bottom, PIPE_WIDTH, self.height_bottom)
+        self.height = random.randint(50, SCREEN_HEIGHT - PIPE_GAP)
+        self.bottom_rect = pygame.Rect(self.x, self.height + PIPE_GAP, PIPE_WIDTH, SCREEN_HEIGHT - self.height - PIPE_GAP)
 
     def update(self):
         self.x += PIPE_VELOCITY
-        self.top_rect.x = self.x
         self.bottom_rect.x = self.x
 
     def draw(self, screen):
-        top_pipe_rect = PIPE_IMAGE_ROTATED.get_rect(midbottom=self.top_rect.midtop)
-        screen.blit(PIPE_IMAGE_ROTATED, top_pipe_rect.topleft)
         screen.blit(PIPE_IMAGE, self.bottom_rect.topleft)
 
     def is_off_screen(self):
         return self.x < -PIPE_WIDTH
 
     def collides_with(self, bird):
-        return self.top_rect.colliderect(bird.rect) or self.bottom_rect.colliderect(bird.rect)
+        return self.bottom_rect.colliderect(bird.rect)
 
 def show_game_over(screen, score):
     game_over_text = font.render('Game Over!', True, RED)
